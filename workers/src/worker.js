@@ -12,7 +12,7 @@
 export default {
   async fetch(request, env, ctx) {
     if(request.method==="GET"){
-      return new Response(JSON.stringify({hoge:"huga"}))
+      return new Response(JSON.stringify({hoge:"huga"}),{headers:{"Content-Type":"application/json"}})
     }
     const data = await request.json(); 
     return new Response(JSON.stringify(data));
