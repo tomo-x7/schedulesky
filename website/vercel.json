@@ -5,5 +5,5 @@
             "source": "/api/:path*",
             "destination": "https://schedulesky.tomo-x.workers.dev//:path*"
         }
-    ] ,"ignoreCommand": "git diff HEAD^ HEAD --quiet"
+    ] ,"ignoreCommand": "git diff HEAD^ HEAD --quiet ./website"
 }
