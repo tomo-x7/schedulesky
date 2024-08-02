@@ -1,5 +1,11 @@
 {
   "name": "schedulesky",
   "version": "1.0.0",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "cookie": "^0.6.0"
+  },
+  "devDependencies": {
+    "@types/cookie": "^0.6.0"
+  }
 }
