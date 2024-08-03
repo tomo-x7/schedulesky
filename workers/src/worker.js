@@ -29,7 +29,7 @@ export default {
 			//tokenを取得してクッキーにつけて返す
 			const { accessJwt, refreshJwt } = await res.json();
 			const header = new Headers();
-			setcookie(header, refreshJwt, accessJwt);
+			setcookie(header, accessJwt, refreshJwt);
 			return createresponse({ message: "success" }, 200, header);
 		}
 		//プロフィールの取得
@@ -42,7 +42,10 @@ export default {
 			const data = await fetch(`${session.endpoint}/xrpc/app.bsky.actor.getProfile?actor=${encodeURIComponent(session.DID)}`, {
 				headers: { Authorization: `Bearer ${session.accesstoken}` },
 			});
-			data.headers.append("Set-Cookie");
+			if (session.didRefresh) {
+				setcookie(data.headers, session.accesstoken, session.refreshtoken);
+			}
+			return data;
 		}
 		//どれにも該当しなければ404
 		return createresponse({ error: "not found" }, 404);
@@ -70,7 +73,7 @@ function tokenParser(token) {
 }
 /**
  * @param {Record<string, string>} cookie
- * @returns {Promise<{DID:string,endpoint:string,accesstoken:string,refreshtoken:string?}|undefined>}
+ * @returns {Promise<{DID:string,endpoint:string,accesstoken:string,refreshtoken:string?,didRefresh:boolean}|undefined>}
  */
 async function getsession(cookie) {
 	//accesstokenを保持している
@@ -78,7 +81,7 @@ async function getsession(cookie) {
 		const tokenData = tokenParser(cookie.accesstoken);
 		//期限切れの場合リターンしない=>リフレッシュ
 		if (tokenData.exp > new Date()) {
-			return { accesstoken: cookie.accesstoken, DID: tokenData.sub, endpoint: await didresolve(tokenData.sub) };
+			return { accesstoken: cookie.accesstoken, DID: tokenData.sub, endpoint: await didresolve(tokenData.sub), didRefresh: false };
 		}
 	}
 	//accesstokenがないのでリフレッシュ
@@ -98,6 +101,7 @@ async function getsession(cookie) {
 						refreshtoken: d.refreshJwt,
 						DID: tokenData.sub,
 						endpoint: await didresolve(tokenData.sub),
+						didRefresh: true,
 					};
 				});
 			}
@@ -124,7 +128,6 @@ async function didresolve(did) {
 		return undefined;
 	}
 	const diddoc = await diddocres.json();
-	console.log(JSON.stringify(diddoc));
 	try {
 		const endpoint = Array.from(diddoc.service).filter((service) => service.id === "#atproto_pds")[0].serviceEndpoint;
 		return endpoint;
@@ -135,19 +138,24 @@ async function didresolve(did) {
 }
 /**
  * @param {Headers} header
- * @param {string} refreshJwt
  * @param {string} accessJwt
+ * @param {string?} refreshJwt
  */
-function setcookie(header, refreshJwt, accessJwt) {
-	const accessJwtdata = tokenParser(accessJwt);
-	const refreshJwtdata = tokenParser(refreshJwt);
-	header.append("Set-Cookie", serialize("refreshtoken", refreshJwt, { httpOnly: true, secure: true, expires: refreshJwtdata.exp }));
-	header.append("Set-Cookie", serialize("accesstoken", accessJwt, { httpOnly: true, secure: true, expires: accessJwtdata.exp }));
+function setcookie(header, accessJwt, refreshJwt) {
+	if (accessJwt) {
+		const accessJwtdata = tokenParser(accessJwt);
+		header.append("Set-Cookie", serialize("accesstoken", accessJwt, { httpOnly: true, secure: true, expires: accessJwtdata.exp }));
+	}
+	if (refreshJwt) {
+		const refreshJwtdata = tokenParser(refreshJwt);
+		header.append("Set-Cookie", serialize("refreshtoken", refreshJwt, { httpOnly: true, secure: true, expires: refreshJwtdata.exp }));
+	}
 }
 /**
  * @param {Object} body
  * @param {number?} status
  * @param {Headers?} header
+ * @returns {Response}
  */
 function createresponse(body, status = 200, header = undefined) {
 	const newheader = header ?? new Headers();
