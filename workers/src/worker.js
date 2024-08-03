@@ -9,10 +9,6 @@
  */
 import { parse, serialize } from "cookie";
 
-const res401 = new Response(JSON.stringify({ error: "require auth" }), {
-	status: 401,
-});
-
 export default {
 	/**@param {Request} request  */
 	async fetch(request, env, ctx) {
@@ -33,7 +29,7 @@ export default {
 			if (!res.ok) {
 				return new Response(await res.json(), { status: res.status, statusText: res.statusText });
 			}
-			const { accessJwt, refreshJwt } = res.json();
+			const { accessJwt, refreshJwt } = await res.json();
 			const accessJwtdata = tokenParser(accessJwt);
 			const refreshJwtdata = tokenParser(refreshJwt);
 			const header = new Headers();
@@ -49,7 +45,6 @@ export default {
 		return new Response(undefined, { status: 404 });
 	},
 };
-tokenParser().aud;
 /**
  * @typedef {Object} tokenData
  * @property {string} scope スコープ(?)
@@ -61,6 +56,7 @@ tokenParser().aud;
  * @returns {tokenData}
  */
 function tokenParser(token) {
+	console.warn(token);
 	const data = JSON.parse(atob(token.split(".")[1]));
 	return {
 		scope: data.scope,
@@ -95,7 +91,12 @@ async function getsession(cookie) {
 			//エラーチェック
 			if (res.ok) {
 				return await res.json().then((d) => {
-					return { accesstoken: d.accessJwt, refreshtoken: d.refreshJwt, DID: tokenData.sub, endpoint: didresolve(tokenData.sub) };
+					return {
+						accesstoken: d.accessJwt,
+						refreshtoken: d.refreshJwt,
+						DID: tokenData.sub,
+						endpoint: didresolve(tokenData.sub),
+					};
 				});
 			}
 		}
