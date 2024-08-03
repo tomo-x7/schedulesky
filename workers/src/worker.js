@@ -89,21 +89,24 @@ async function getsession(cookie) {
 		const tokenData = tokenParser(cookie.refreshtoken);
 		//期限切れチェック
 		if (tokenData.exp > new Date()) {
-			const res = await fetch(`https://${tokenData.aud}/xrpc/com.atproto.server.refreshSession`, {
-				method: "POST",
-				headers: { Authorization: `Bearer ${cookie.refreshtoken}` },
-			});
-			//エラーチェック
-			if (res.ok) {
-				return await res.json().then(async (d) => {
-					return {
-						accesstoken: d.accessJwt,
-						refreshtoken: d.refreshJwt,
-						DID: tokenData.sub,
-						endpoint: await didresolve(tokenData.sub),
-						didRefresh: true,
-					};
+			const endpoint = await didresolve(tokenData.sub);
+			if (endpoint) {
+				const res = await fetch(`https://${endpoint}/xrpc/com.atproto.server.refreshSession`, {
+					method: "POST",
+					headers: { Authorization: `Bearer ${cookie.refreshtoken}` },
 				});
+				//エラーチェック
+				if (res.ok) {
+					return await res.json().then(async (d) => {
+						return {
+							accesstoken: d.accessJwt,
+							refreshtoken: d.refreshJwt,
+							DID: tokenData.sub,
+							endpoint: endpoint,
+							didRefresh: true,
+						};
+					});
+				}
 			}
 		}
 	}
