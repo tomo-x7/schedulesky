@@ -59,7 +59,6 @@ export default {
  * @returns {tokenData}
  */
 function tokenParser(token) {
-	console.warn(token);
 	const data = JSON.parse(atob(token.split(".")[1]));
 	return {
 		scope: data.scope,
@@ -117,6 +116,7 @@ async function didresolve(did) {
 	} else if (/^did:web/.test(did)) {
 		diddocres = await fetch(`https://${did.replace("did:web:", "")}/.well-known/did.json`);
 	} else {
+		console.error("bad did method");
 		return undefined;
 	}
 	if (!diddocres.ok) {
@@ -124,8 +124,14 @@ async function didresolve(did) {
 		return undefined;
 	}
 	const diddoc = await diddocres.json();
-	const endpoint = new Array(diddoc.service).filter((service) => service.id === "#atproto_pds")?.[0]?.serviceEndpoint;
-	return endpoint;
+	console.log(JSON.stringify(diddoc));
+	try {
+		const endpoint = Array.from(diddoc.service).filter((service) => service.id === "#atproto_pds")[0].serviceEndpoint;
+		return endpoint;
+	} catch (e) {
+		console.error(e);
+		return undefined;
+	}
 }
 /**
  * @param {Headers} header
