@@ -5,5 +5,5 @@
         "indentStyle":"tab",
         "indentWidth": 4,
         "lineWidth":140
-      },"linter":{"rules":{"style":{"noNonNullAssertion":"info"}}}
+      },"linter":{"rules":{"style":{"noNonNullAssertion":"off"}}}
 }
