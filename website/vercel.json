@@ -3,7 +3,7 @@
 	"rewrites": [
 		{
 			"source": "/api/:path*",
-			"destination": "https://schedulesky.tomo-x.workers.dev//:path*"
+			"destination": "https://schedulesky.tomo-x.workers.dev/:path*"
 		}
 	]
 }
