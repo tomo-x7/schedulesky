@@ -35,7 +35,7 @@ export default {
 		//プロフィールの取得
 		if (method === "GET" && path === "/getprofile") {
 			//セッションを取得してtokenがなければ認証を要求
-			const session = getsession(cookie);
+			const session = await getsession(cookie);
 			if (!session) {
 				return createresponse({ error: "require auth" }, 401);
 			}
@@ -71,7 +71,7 @@ function tokenParser(token) {
 }
 /**
  * @param {Record<string, string>} cookie
- * @returns {{DID:string,endpoint:string,accesstoken:string,refreshtoken:string?}|undefined}
+ * @returns {Promise<{DID:string,endpoint:string,accesstoken:string,refreshtoken:string?}|undefined>}
  */
 async function getsession(cookie) {
 	//accesstokenを保持している
@@ -79,7 +79,7 @@ async function getsession(cookie) {
 		const tokenData = tokenParser(cookie.accesstoken);
 		//期限切れの場合リターンしない=>リフレッシュ
 		if (tokenData.exp > new Date()) {
-			return { accesstoken: cookie.accesstoken, DID: tokenData.sub, endpoint: didresolve(tokenData.sub) };
+			return { accesstoken: cookie.accesstoken, DID: tokenData.sub, endpoint: await didresolve(tokenData.sub) };
 		}
 	}
 	//accesstokenがないのでリフレッシュ
@@ -93,12 +93,12 @@ async function getsession(cookie) {
 			});
 			//エラーチェック
 			if (res.ok) {
-				return await res.json().then((d) => {
+				return await res.json().then(async (d) => {
 					return {
 						accesstoken: d.accessJwt,
 						refreshtoken: d.refreshJwt,
 						DID: tokenData.sub,
-						endpoint: didresolve(tokenData.sub),
+						endpoint: await didresolve(tokenData.sub),
 					};
 				});
 			}
@@ -109,7 +109,7 @@ async function getsession(cookie) {
 }
 /**
  * @param {string} did
- * @returns {string|undefined} PDSのエンドポイント */
+ * @returns {Promise<string|undefined>} PDSのエンドポイント */
 async function didresolve(did) {
 	let diddocres;
 	if (/^did:plc/.test(did)) {
