@@ -1,12 +1,3 @@
-/**
- * Welcome to Cloudflare Workers! This is your first worker.
- *
- * - Run "npm run dev" in your terminal to start a development server
- * - Open a browser tab at http://localhost:8787/ to see your worker in action
- * - Run "npm run deploy" to publish your worker
- *
- * Learn more at https://developers.cloudflare.com/workers/
- */
 import { parse, serialize } from "cookie";
 
 export default {
@@ -16,7 +7,9 @@ export default {
 		const method = request.method;
 		const cookie = parse(request.headers.get("Cookie") || "");
 		const type = request.headers.get("Content-Type");
+		//ログイン処理
 		if (method === "POST" && path === "/login") {
+			//バリデーション
 			if (type !== "application/json") {
 				return new Response({ error: "Content-Type must be 'application/json'" }, { status: 400 });
 			}
@@ -26,23 +19,30 @@ export default {
 				headers: { "Content-Type": "application/json" },
 				method: "POST",
 			});
+			//エラー投げてきたらそのままエラーを返す
 			if (!res.ok) {
-				return new Response(await res.json(), { status: res.status, statusText: res.statusText });
+				return res;
 			}
+			//tokenを取得してクッキーにつけて返す
 			const { accessJwt, refreshJwt } = await res.json();
-			const accessJwtdata = tokenParser(accessJwt);
-			const refreshJwtdata = tokenParser(refreshJwt);
 			const header = new Headers();
-			header.append(
-				"Set-Cookie",
-				serialize("refreshtoken", refreshJwt, { httpOnly: true, secure: true, expires: refreshJwtdata.exp }),
-			);
-			header.append("Set-Cookie", serialize("accesstoken", accessJwt, { httpOnly: true, secure: true, expires: accessJwtdata.exp }));
-			return new Response(undefined, { status: 200, headers: header });
+			setcookie(header, refreshJwt, accessJwt);
+			return new Response({ message: "success" }, { status: 200, headers: header });
 		}
+		//プロフィールの取得
 		if (method === "GET" && path === "/getprofile") {
+			//セッションを取得してtokenがなければ認証を要求
+			const session = getsession(cookie);
+			if (!session) {
+				return new Response({ error: "require auth" }, { status: 401 });
+			}
+			const data = await fetch(`${session.endpoint}/xrpc/app.bsky.actor.getProfile?actor=${encodeURIComponent(session.DID)}`, {
+				headers: { Authorization: `Bearer ${session.accesstoken}` },
+			});
+			data.headers.append("Set-Cookie");
 		}
-		return new Response(undefined, { status: 404 });
+		//どれにも該当しなければ404
+		return new Response({ error: "not found" }, { status: 404 });
 	},
 };
 /**
@@ -123,4 +123,15 @@ async function didresolve(did) {
 	const diddoc = await diddocres.json();
 	const endpoint = new Array(diddoc.service).filter((service) => service.id === "#atproto_pds")?.[0]?.serviceEndpoint;
 	return endpoint;
+}
+/**
+ * @param {Headers} header
+ * @param {string} refreshJwt
+ * @param {string} accessJwt
+ */
+function setcookie(header, refreshJwt, accessJwt) {
+	const accessJwtdata = tokenParser(accessJwt);
+	const refreshJwtdata = tokenParser(refreshJwt);
+	header.append("Set-Cookie", serialize("refreshtoken", refreshJwt, { httpOnly: true, secure: true, expires: refreshJwtdata.exp }));
+	header.append("Set-Cookie", serialize("accesstoken", accessJwt, { httpOnly: true, secure: true, expires: accessJwtdata.exp }));
 }
