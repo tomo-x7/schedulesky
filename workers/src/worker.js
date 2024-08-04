@@ -1,3 +1,4 @@
+// @ts-check
 import { parse, serialize } from "cookie";
 
 export default {
@@ -76,7 +77,7 @@ function tokenParser(token) {
 }
 /**
  * @param {Record<string, string>} cookie
- * @returns {Promise<{DID:string,endpoint:string,accesstoken:string,refreshtoken:string?,didRefresh:boolean}|undefined>}
+ * @returns {Promise<{DID:string,endpoint:string|undefined,accesstoken:string,refreshtoken?:string,didRefresh:boolean}|undefined>}
  */
 async function getsession(cookie) {
 	//accesstokenを保持している
@@ -146,7 +147,7 @@ async function didresolve(did) {
 /**
  * @param {Headers|undefined} header
  * @param {string} accessJwt
- * @param {string?} refreshJwt
+ * @param {string|undefined} refreshJwt
  * @returns {Headers}
  */
 function setcookie(header, accessJwt, refreshJwt) {
@@ -167,7 +168,7 @@ function setcookie(header, accessJwt, refreshJwt) {
 /**
  * @param {Object} body
  * @param {number?} status
- * @param {Headers?} header
+ * @param {Headers|undefined} header
  * @returns {Response}
  */
 function createresponse(body, status = 200, header = undefined) {
