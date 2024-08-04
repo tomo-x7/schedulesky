@@ -28,8 +28,7 @@ export default {
 			}
 			//tokenを取得してクッキーにつけて返す
 			const { accessJwt, refreshJwt } = await res.json();
-			const header = new Headers();
-			setcookie(header, accessJwt, refreshJwt);
+			const header = setcookie(undefined, accessJwt, refreshJwt);
 			return createresponse({ message: "success" }, 200, header);
 		}
 		//プロフィールの取得
@@ -42,8 +41,12 @@ export default {
 			const data = await fetch(`${session.endpoint}/xrpc/app.bsky.actor.getProfile?actor=${encodeURIComponent(session.DID)}`, {
 				headers: { Authorization: `Bearer ${session.accesstoken}` },
 			});
-			if (session.didRefresh) {
-				setcookie(data.headers, session.accesstoken, session.refreshtoken);
+			if (data.ok) {
+				let header;
+				if (session.didRefresh) {
+					header = setcookie(data.headers, session.accesstoken, session.refreshtoken);
+				}
+				return new Response(await data.text(), { headers: header });
 			}
 			return data;
 		}
@@ -91,13 +94,14 @@ async function getsession(cookie) {
 		if (tokenData.exp > new Date()) {
 			const endpoint = await didresolve(tokenData.sub);
 			if (endpoint) {
-				const res = await fetch(`https://${endpoint}/xrpc/com.atproto.server.refreshSession`, {
+				const res = await fetch(`${endpoint}/xrpc/com.atproto.server.refreshSession`, {
 					method: "POST",
 					headers: { Authorization: `Bearer ${cookie.refreshtoken}` },
 				});
 				//エラーチェック
 				if (res.ok) {
 					return await res.json().then(async (d) => {
+						console.log(JSON.stringify(d));
 						return {
 							accesstoken: d.accessJwt,
 							refreshtoken: d.refreshJwt,
@@ -140,19 +144,25 @@ async function didresolve(did) {
 	}
 }
 /**
- * @param {Headers} header
+ * @param {Headers|undefined} header
  * @param {string} accessJwt
  * @param {string?} refreshJwt
+ * @returns {Headers}
  */
 function setcookie(header, accessJwt, refreshJwt) {
+	const newheader = new Headers(header);
 	if (accessJwt) {
 		const accessJwtdata = tokenParser(accessJwt);
-		header.append("Set-Cookie", serialize("accesstoken", accessJwt, { httpOnly: true, secure: true, expires: accessJwtdata.exp }));
+		newheader.append("Set-Cookie", serialize("accesstoken", accessJwt, { httpOnly: true, secure: true, expires: accessJwtdata.exp }));
 	}
 	if (refreshJwt) {
 		const refreshJwtdata = tokenParser(refreshJwt);
-		header.append("Set-Cookie", serialize("refreshtoken", refreshJwt, { httpOnly: true, secure: true, expires: refreshJwtdata.exp }));
+		newheader.append(
+			"Set-Cookie",
+			serialize("refreshtoken", refreshJwt, { httpOnly: true, secure: true, expires: refreshJwtdata.exp }),
+		);
 	}
+	return newheader;
 }
 /**
  * @param {Object} body
