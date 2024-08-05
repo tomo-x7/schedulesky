@@ -51,6 +51,21 @@ export default {
 			}
 			return data;
 		}
+		if (method === "POST" && path === "/post") {
+			//バリデーション
+			if (type !== "application/json") {
+				return createresponse({ error: "Content-Type must be 'application/json'" }, 400);
+			}
+			/**
+			 * @typedef postdata
+			 * @property {string} date
+			 * @property {string} text
+			 * @property {object} facets
+			 * @property {Array<{base64:string,alt:string|undefined}>|undefined} images base64エンコードした画像とALTテキストの配列　最大画像サイズは0.9MB?　配列の最大長さは4
+			 */
+			/**@type {postdata} */
+			const data = await request.json();
+		}
 		//どれにも該当しなければ404
 		return createresponse({ error: "not found" }, 404);
 	},
