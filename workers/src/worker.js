@@ -51,7 +51,7 @@ export default {
 			}
 			return data;
 		}
-		if (method === "POST" && path === "/post") {
+		if (method === "POST" && path === "/createpost") {
 			//バリデーション
 			if (type !== "application/json") {
 				return createresponse({ error: "Content-Type must be 'application/json'" }, 400);
