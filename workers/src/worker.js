@@ -1,6 +1,5 @@
 // @ts-check
 import { parse, serialize } from "cookie";
-
 export default {
 	/**@param {Request} request  */
 	async fetch(request, env, ctx) {
@@ -51,6 +50,7 @@ export default {
 			}
 			return data;
 		}
+		//投稿の作成
 		if (method === "POST" && path === "/createpost") {
 			//バリデーション
 			if (type !== "application/json") {
@@ -61,10 +61,84 @@ export default {
 			 * @property {string} date
 			 * @property {string} text
 			 * @property {object} facets
-			 * @property {Array<{base64:string,alt:string|undefined}>|undefined} images base64エンコードした画像とALTテキストの配列　最大画像サイズは0.9MB?　配列の最大長さは4
+			 * @property {Array<{base64:string,alt:string|undefined}>|undefined} images base64エンコードした画像とALTテキストの配列　最大画像サイズは0.9MB? クライアント側でJPEGに変換しておく　配列の最大長さは4
 			 */
 			/**@type {postdata} */
 			const data = await request.json();
+			if (data.images !== undefined && data.images?.length > 4) {
+				//imagesがundefinedか長さが4未満ならOK
+				return createresponse({ error: "bad request" }, 400);
+			}
+			//セッションを取得してtokenがなければ認証を要求
+			const session = await getsession(cookie, true);
+			if (!session) {
+				return createresponse({ error: "require auth" }, 401);
+			}
+			//cookieの更新をする場合用のヘッダーの作成
+			const header = session.didRefresh ? setcookie(undefined, session.accesstoken, session.refreshtoken) : undefined;
+			//DBに登録するbodyの元になる
+			const blobs = [];
+			const rids = [];
+			const alts = [];
+			//画像をアップロード
+			if (data.images !== undefined) {
+				for (const image of data.images) {
+					const imagebuff = Buffer.from(image.base64, "base64");
+					const blobres = await fetch(`${session.endpoint}/xrpc/com.atproto.repo.uploadBlob`, {
+						method: "POST",
+						headers: { Authorization: `Bearer ${session.accesstoken}`, "Content-Type": "image/jpeg" },
+						body: imagebuff,
+					}).then((d) => (d.ok ? d.json() : undefined));
+					if (!blobres?.blob) return createresponse({ error: "image upload failed" }, 500, header);
+					const body = {
+						repo: session.DID,
+						collection: "app.vercel.schedulesky",
+						validate: false,
+						record: {
+							$type: "app.vercel.schedulesky",
+							blob: blobres.blob,
+							text: "hogehogehugahuga",
+						},
+					};
+					const res = await fetch("https://bsky.social/xrpc/com.atproto.repo.createRecord", {
+						body: JSON.stringify(body),
+						method: "POST",
+						headers: { Authorization: `Bearer ${session.accesstoken}`, "Content-Type": "application/json" },
+					});
+					if (!res.ok) {
+						return createresponse({ error: "save image failed" }, 500, header);
+					}
+					blobs.push(blobres.blob);
+					rids.push((await res.json()).uri.split("/")[4]);
+					alts.push(image.alt ?? null);
+				}
+				if (blobs.length !== rids.length) {
+					return createresponse({ error: "length conflict" }, 500, header);
+				}
+			}
+			const res = await fetch("https://rxtjjnbocilskefknuac.supabase.co/rest/v1/rpc/createpost", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					Authorization: `Bearer ${env.SUPABASE_SERVICE_KEY}`,
+					apikey: env.SUPABASE_SERVICE_KEY,
+				},
+				body: JSON.stringify({
+					post_at: new Date(data.date),
+					posttext: data.text,
+					facet: data.facets,
+					refreshtoken: session.refreshtoken,
+					did: session.DID,
+					pdsendpoint: session.endpoint,
+					blob: blobs,
+					rid: rids,
+					alt: alts,
+				}),
+			});
+			if (!res.ok) {
+				console.error(await res.json());
+				return createresponse({ error: "DB error" }, 500, header);
+			}
 		}
 		//どれにも該当しなければ404
 		return createresponse({ error: "not found" }, 404);
@@ -92,11 +166,12 @@ function tokenParser(token) {
 }
 /**
  * @param {Record<string, string>} cookie
+ * @param {boolean} forcerefresh trueの場合強制リフレッシュ デフォルトはfalse
  * @returns {Promise<{DID:string,endpoint:string|undefined,accesstoken:string,refreshtoken?:string,didRefresh:boolean}|undefined>}
  */
-async function getsession(cookie) {
-	//accesstokenを保持している
-	if (cookie.accesstoken) {
+async function getsession(cookie, forcerefresh = false) {
+	//accesstokenを保持しているかつ強制リフレッシュしない
+	if (cookie.accesstoken && !forcerefresh) {
 		const tokenData = tokenParser(cookie.accesstoken);
 		//期限切れの場合リターンしない=>リフレッシュ
 		if (tokenData.exp > new Date()) {
