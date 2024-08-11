@@ -1,3 +1,5 @@
+(<HTMLInputElement>document.getElementById("endpoint")).defaultValue = localStorage.getItem("endpoint") ?? "";
+
 document.getElementById("login")!.addEventListener("click", async () => {
 	const endpoint = (<HTMLInputElement>document.getElementById("endpoint")).value;
 	const handle = (<HTMLInputElement>document.getElementById("handle")).value;
@@ -8,6 +10,7 @@ document.getElementById("login")!.addEventListener("click", async () => {
 		headers: { "Content-Type": "application/json" },
 	});
 	if (res.ok) {
+		localStorage.setItem("endpoint", endpoint);
 		location.href = "/";
 	} else {
 		const log = document.getElementById("log")!;

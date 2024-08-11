@@ -14,10 +14,10 @@ export default {
 				return createresponse({ error: "Content-Type must be 'application/json'" }, 400);
 			}
 			const { endpoint, identifier, password } = await request.json();
-			if (!URL.canParse(`https://${endpoint}/`)) {
+			if (!URL.canParse(`${endpoint}/`)) {
 				return createresponse({ error: "bad endpoint" }, 400);
 			}
-			const res = await fetch(`https://${endpoint}/xrpc/com.atproto.server.createSession`, {
+			const res = await fetch(`${endpoint}/xrpc/com.atproto.server.createSession`, {
 				body: JSON.stringify({ identifier, password }),
 				headers: { "Content-Type": "application/json" },
 				method: "POST",
