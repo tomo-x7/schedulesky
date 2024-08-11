@@ -1,4 +1,4 @@
-(<HTMLInputElement>document.getElementById("endpoint")).defaultValue = localStorage.getItem("endpoint") ?? "";
+(<HTMLInputElement>document.getElementById("endpoint")).defaultValue = localStorage.getItem("endpoint") ?? "https://bsky.social";
 
 document.getElementById("login")!.addEventListener("click", async () => {
 	const endpoint = (<HTMLInputElement>document.getElementById("endpoint")).value;
