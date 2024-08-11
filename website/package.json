@@ -11,5 +11,9 @@
   "devDependencies": {
     "typescript": "^5.2.2",
     "vite": "^5.3.4"
+  },
+  "dependencies": {
+    "@atproto/api": "^0.12.29",
+    "browser-image-compression": "^2.0.2"
   }
 }
