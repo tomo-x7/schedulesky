@@ -271,7 +271,7 @@ function createresponse(body, status = 200, header = undefined) {
  * @param {string} base64Str
  */
 function base64ToUint8Array(base64Str) {
-	const raw = atob(base64Str);
+	const raw = atob(base64Str.replace(/data:.*?;base64,/, ""));
 	return Uint8Array.from(
 		Array.prototype.map.call(raw, (x) => {
 			return x.charCodeAt(0);
