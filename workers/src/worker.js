@@ -83,11 +83,10 @@ export default {
 			//画像をアップロード
 			if (data.images !== undefined) {
 				for (const image of data.images) {
-					const imagebuff = Buffer.from(image.base64, "base64");
 					const blobres = await fetch(`${session.endpoint}/xrpc/com.atproto.repo.uploadBlob`, {
 						method: "POST",
 						headers: { Authorization: `Bearer ${session.accesstoken}`, "Content-Type": "image/jpeg" },
-						body: imagebuff,
+						body: base64ToUint8Array(image.base64),
 					}).then((d) => (d.ok ? d.json() : undefined));
 					if (!blobres?.blob) return createresponse({ error: "image upload failed" }, 500, header);
 					const body = {
@@ -97,7 +96,6 @@ export default {
 						record: {
 							$type: "app.vercel.schedulesky",
 							blob: blobres.blob,
-							text: "hogehogehugahuga",
 						},
 					};
 					const res = await fetch("https://bsky.social/xrpc/com.atproto.repo.createRecord", {
@@ -266,4 +264,17 @@ function createresponse(body, status = 200, header = undefined) {
 	const newheader = header ?? new Headers();
 	newheader.append("Content-Type", "application/json");
 	return new Response(JSON.stringify(body), { status: status ?? 200, headers: newheader });
+}
+
+// (from: https://gist.github.com/borismus/1032746#gistcomment-1493026)
+/**
+ * @param {string} base64Str
+ */
+function base64ToUint8Array(base64Str) {
+	const raw = atob(base64Str);
+	return Uint8Array.from(
+		Array.prototype.map.call(raw, (x) => {
+			return x.charCodeAt(0);
+		}),
+	);
 }
