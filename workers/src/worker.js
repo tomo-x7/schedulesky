@@ -139,6 +139,7 @@ export default {
 				console.error(await res.json());
 				return createresponse({ error: "DB error" }, 500, header);
 			}
+			return createresponse({ message: "success" }, 200);
 		}
 		//どれにも該当しなければ404
 		return createresponse({ error: "not found" }, 404);
