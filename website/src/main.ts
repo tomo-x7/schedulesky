@@ -60,7 +60,7 @@ postbtn.addEventListener("click", async () => {
 		const body = {
 			text: rt.text,
 			date: date.toISOString(),
-			facets: rt.facets??null,
+			facets: rt.facets ?? null,
 			images: images?.map((str) => {
 				return { base64: str, alt: null };
 			}),
@@ -117,5 +117,15 @@ function blobtobase64(blob: Blob): Promise<string> {
 		reader.readAsDataURL(blob);
 	});
 }
+//投稿時の二重クリック防止
 function loading() {}
 function finloading() {}
+
+const menu = document.getElementById("menu")!;
+document.addEventListener("click", () => {
+	menu.classList.remove("active");
+});
+document.getElementById("menubutton")!.addEventListener("click", (ev) => {
+	ev.stopPropagation();
+	menu.classList.add("active");
+});
