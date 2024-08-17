@@ -4,7 +4,12 @@
 	"main": "index.js",
 	"license": "MIT",
 	"dependencies": {
+		"@atproto/jwk-jose": "^0.1.2",
+		"@atproto/oauth-client-node": "^0.0.3",
 		"@google-cloud/functions-framework": "^3.0.0"
 	},
-	"scripts": { "deploy": "gcloud functions deploy post --region=us-west1" }
+	"scripts": {
+		"deploy": "gcloud functions deploy post --region=us-west1"
+	},
+	"type": "module"
 }

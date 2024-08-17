@@ -1,15 +1,94 @@
-const functions = require("@google-cloud/functions-framework");
+//@ts-check
+import { cloudEvent } from "@google-cloud/functions-framework";
+import { NodeOAuthClient } from "@atproto/oauth-client-node";
+import { JoseKey } from "@atproto/jwk-jose";
 
+const client = new NodeOAuthClient({	clientMetadata: {
+		// Must be a URL that will be exposing this metadata
+		client_id: "https://schedulesky.vercel.app/client-metadata.json",
+		client_name: "schedulesky",
+		client_uri: "https://schedulesky.vercel.app/",
+//		logo_uri: "https://oauth-test-pink.vercel.app/next.svg",
+//		tos_uri: "https://oauth-test-pink.vercel.app/tos",
+//		policy_uri: "https://oauth-test-pink.vercel.app/policy",
+		redirect_uris: ["https://schedulesky.vercel.app/api/callback"],
+		scope: "profile email offline_access",
+		grant_types: ["authorization_code", "refresh_token"],
+		response_types: ["code"],
+		application_type: "web",
+		token_endpoint_auth_method: "private_key_jwt",
+		dpop_bound_access_tokens: true,
+		jwks_uri: "https://schedulesky.vercel.app/jwks.json",
+		token_endpoint_auth_signing_alg: "ES256",
+	},keyset: await Promise.all([
+	JoseKey.fromImportable(process.env.PRIVATE_KEY_1 ?? ""),
+	JoseKey.fromImportable(process.env.PRIVATE_KEY_2 ?? ""),
+	JoseKey.fromImportable(process.env.PRIVATE_KEY_3 ?? ""),
+]),	sessionStore: {
+	set: async (sub, sessionData) => {
+		console.log(JSON.stringify(sessionData));
+		await setredis(`session_${sub}`, sessionData);
+	},
+	get: (key) => getredis(`session_${key}`),
+	del: (key) => delredis(`session_${key}`),
+},
+
+// Interface to store authorization state data (during authorization flows)
+stateStore: {
+	set: async (sub, sessionData) => {
+		console.log(JSON.stringify(sessionData));
+		await setredis(`state_${sub}`, sessionData, 3600);
+	},
+	get: (key) => getredis(`state_${key}`),
+	del: (key) => delredis(`state_${key}`),
+},});
+/**
+ * @param {string} key
+ * @param {any} value
+ * @param {undefined|number} ex 期限（秒） 
+ */
+async function setredis(key, value, ex=undefined) {
+	await fetch(
+		`${process.env.UPSTASH_REDIS_REST_URL}/set/${key}${typeof ex === "number" ? `?ex=${ex}` : ""}`,
+		{
+			method: "POST",
+			body: JSON.stringify(value),
+			headers: {
+				Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}`,
+			},
+		},
+	);
+}
+async function getredis(key) {
+	const res = await fetch(`${process.env.UPSTASH_REDIS_REST_URL}/get/${key}`, {
+		headers: {
+			Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}`,
+		},
+	});
+	if (!res.ok) {
+		return;
+	}
+	return JSON.parse((await res.json()).result);
+}
+async function delredis(key) {
+	await fetch(`${process.env.UPSTASH_REDIS_REST_URL}/del/${key}`, {
+		headers: {
+			Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}`,
+		},
+	});
+}
+const dbheader = new Headers({ Authorization: `Bearer ${process.env.SUPABASE_KEY}`, apikey: process.env.SUPABASE_KEY??"" });
 // Register a CloudEvent callback with the Functions Framework that will
 // be executed when the Pub/Sub trigger topic receives a message.
-functions.cloudEvent("helloPubSub", async (cloudEvent) => {
+cloudEvent("helloPubSub", async (cloudEvent) => {
 	//データを取得
-	await fetch("https://rxtjjnbocilskefknuac.supabase.co/rest/v1/schedulesky_posts?select=*", {
-		headers: { Authorization: `Bearer ${process.env.SUPABASE_KEY}`, apikey: process.env.SUPABASE_KEY },
-	});
+	const data = await fetch("https://rxtjjnbocilskefknuac.supabase.co/rest/v1/schedulesky_posts?select=*", {
+		headers: dbheader,
+	}).then((d) => d.json());
+
+	await POST(data[0]);
 	//
 });
-//test
 
 /**
  * @typedef {Object} data
@@ -17,13 +96,11 @@ functions.cloudEvent("helloPubSub", async (cloudEvent) => {
  * @property {string} post_at DateのISOString
  * @property {string} posttext
  * @property {Object} facet
- * @property {string} refreshtoken
  * @property {string} did
- * @property {string} pdsendpoint
+ *
  * @param {data} data
  */
 async function POST(data) {
-	const dbheader = { Authorization: `Bearer ${process.env.SUPABASE_KEY}`, apikey: process.env.SUPABASE_KEY };
 	//ポストの画像を取得
 	const imgres = await fetch(`https://rxtjjnbocilskefknuac.supabase.co/rest/v1/schedulesky_images?parent_post=eq.${data.id}&order=id`, {
 		headers: dbheader,
@@ -34,27 +111,18 @@ async function POST(data) {
 	/**@type {Array<{"rid":string,"blob":Object,"alt":string|null,}>} */
 	const imgdata = await imgres.json();
 
-	//アクセストークンを取得
-	const accesstoken = await fetch(`${data.pdsendpoint}/xrpc/com.atproto.server.refreshSession`, {
-		method: "POST",
-		headers: { Authorization: `Bearer ${data.refreshtoken}` },
-	}).then((d) => d.accessJwt);
+	//agentを取得
+	const agent = await client.restore(data.did);
 
 	//ポストする
+	//recordのviaにクライアント名を入れる
+	//textとかfacetと同列
 
 	//画像を保持していたレコードを消す(DBデータ削除と並列実行)
-	//applyWritesだと削除済みだった場合にエラーになるらしい
-	const promises = imgdata.map((img) => {
-		return fetch("https://bsky.social/xrpc/com.atproto.repo.deleteRecord", {
-			method: "POST",
-			body: JSON.stringify({
-				repo: data.did,
-				collection: "app.vercel.schedulesky",
-				rkey: img.rid,
-			}),
-			headers: { Authorization: `Bearer ${accesstoken}` },
-		});
-	});
+	//applyWritesだと削除済みだった場合にエラーになるっぽいので使用しない
+	const promises = imgdata.map((img) =>
+		agent.com.atproto.repo.deleteRecord({ repo: data.did, collection: "app.vercel.schedulesky", rkey: img.rid }),
+	);
 
 	//DBのデータを削除する 画像の方は外部キー制約により自動で消える (画像保持レコード削除と並列実行)
 	const deleteres = fetch(`https://rxtjjnbocilskefknuac.supabase.co/rest/v1/schedulesky_posts?id=eq.${data.id}`, {
@@ -63,5 +131,5 @@ async function POST(data) {
 	});
 
 	//上の並列実行二つを待機
-	console.log(Promise.allSettled(...promises, deleteres));
+	return await Promise.allSettled([deleteres,...promises]);
 }

@@ -1,7 +1,103 @@
 // @ts-check
 import { parse, serialize } from "cookie";
+import { NodeOAuthClient } from "@atproto/oauth-client-node";
+import { JoseKey } from "@atproto/jwk-jose";
+
+const client = new NodeOAuthClient({
+	// This object will be used to build the payload of the /client-metadata.json
+	// endpoint metadata, exposing the client metadata to the OAuth server.
+	clientMetadata: {
+		// Must be a URL that will be exposing this metadata
+		client_id: "https://schedulesky.vercel.app/api/client-metadata.json",
+		client_name: "schedulesky",
+		client_uri: "https://schedulesky.vercel.app/",
+		logo_uri: "https://oauth-test-pink.vercel.app/next.svg",
+		redirect_uris: ["https://schedulesky.vercel.app/api/callback"],
+		scope: "profile email offline_access",
+		grant_types: ["authorization_code", "refresh_token"],
+		response_types: ["code"],
+		application_type: "web",
+		token_endpoint_auth_method: "private_key_jwt",
+		dpop_bound_access_tokens: true,
+		jwks_uri: "https://oauth-test-pink.vercel.app/api/jwks.json",
+		token_endpoint_auth_signing_alg: "ES256",
+	},
+	// Used to authenticate the client to the token endpoint. Will be used to
+	// build the jwks object to be exposed on the "jwks_uri" endpoint.
+	keyset: await Promise.all([
+		JoseKey.fromImportable(process.env.PRIVATE_KEY_1 ?? ""),
+		JoseKey.fromImportable(process.env.PRIVATE_KEY_2 ?? ""),
+		JoseKey.fromImportable(process.env.PRIVATE_KEY_3 ?? ""),
+	]),
+
+	// Interface to store authenticated session data
+	sessionStore: {
+		set: async (sub, sessionData) => {
+			console.log(JSON.stringify(sessionData));
+			await setredis(`session_${sub}`, sessionData);
+		},
+		get: (key) => getredis(`session_${key}`),
+		del: (key) => delredis(`session_${key}`),
+	},
+
+	// Interface to store authorization state data (during authorization flows)
+	stateStore: {
+		set: async (sub, sessionData) => {
+			console.log(JSON.stringify(sessionData));
+			await setredis(`state_${sub}`, sessionData, 3600);
+		},
+		get: (key) => getredis(`state_${key}`),
+		del: (key) => delredis(`state_${key}`),
+	},
+
+	// A lock to prevent concurrent access to the session store. Optional if only one instance is running.
+	//requestLock,
+});
+/**
+ * @param {number | undefined} ex 期限切れになるまでの秒数
+ * @param {string} key
+ * @param {any} value
+ */
+async function setredis(key, value, ex = undefined) {
+	await fetch(`${process.env.UPSTASH_REDIS_REST_URL}/set/${key}${typeof ex === "number" ? `?ex=${ex}` : ""}`, {
+		method: "POST",
+		body: JSON.stringify(value),
+		headers: {
+			Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}`,
+		},
+	});
+}
+/**
+ * @param {string} key
+ */
+async function getredis(key) {
+	const res = await fetch(`${process.env.UPSTASH_REDIS_REST_URL}/get/${key}`, {
+		headers: {
+			Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}`,
+		},
+	});
+	if (!res.ok) {
+		return;
+	}
+	return JSON.parse((await res.json()).result);
+}
+/**
+ * @param {string} key
+ */
+async function delredis(key) {
+	await fetch(`${process.env.UPSTASH_REDIS_REST_URL}/del/${key}`, {
+		headers: {
+			Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}`,
+		},
+	});
+}
+
 export default {
-	/**@param {Request} request  */
+	/**
+	 * @param {Request} request
+	 * @param {{ SUPABASE_SERVICE_KEY: any; }} env
+	 * @param {any} ctx
+	 */
 	async fetch(request, env, ctx) {
 		const path = new URL(request.url).pathname;
 		const method = request.method;
@@ -273,7 +369,7 @@ function createresponse(body, status = 200, header = undefined) {
 function base64ToUint8Array(base64Str) {
 	const raw = atob(base64Str.replace(/data:.*?;base64,/, ""));
 	return Uint8Array.from(
-		Array.prototype.map.call(raw, (x) => {
+		Array.prototype.map.call(raw, (/** @type {string} */ x) => {
 			return x.charCodeAt(0);
 		}),
 	);
