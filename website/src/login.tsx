@@ -1,23 +1,31 @@
+import { useEffect, useState } from "react";
+
 export default function Login() {
+	const [handle, sethandle] = useState<string | undefined>(undefined);
+	useEffect(() => {
+		const handle = localStorage.getItem("handle");
+		if (handle) {
+			sethandle(handle);
+		}
+	});
 	return (
 		<>
-			<label>
-				エンドポイント
-				<input id="endpoint" type="url" autoComplete="url" value="https://bsky.social" />
-			</label>
-			<br />
-			<label>
-				ハンドルかDID
-				<input id="handle" type="text" autoComplete="username" placeholder="example.bsky.social" />
-			</label>
-			<br />
-			<label>
-				アプリパスワード
-				<input id="password" type="password" autoComplete="current-password" placeholder="aaaa-bbbb-cccc-dddd" />
-			</label>
-			<br />
-			<button type="button" id="login">
-				ログイン
+			{handle ? (
+				<button type="button">
+					<img alt="" src={localStorage.getItem("icon") ?? ""} />
+					{/*そのユーザーのアイコン blueskyのアイコンか初期アイコンにフォールバック*/}
+					{handle}でログイン
+				</button>
+			) : undefined}
+			<button type="button">
+				<img alt="" />
+				{/* ↑blueskyのアイコン*/}
+				{handle ? "他のユーザー" : "Bluesky"}でログイン
+			</button>
+			<button type="button">
+				<img alt="" />
+				{/* ↑blueskyのアイコン*/}
+				{handle ? "他のユーザー" : "Bluesky"}でログイン{"(セルフホストPDSの方はこちら)"}
 			</button>
 			<div id="log" />
 		</>
