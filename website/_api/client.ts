@@ -6,7 +6,7 @@ export const client = new NodeOAuthClient({
 	// endpoint metadata, exposing the client metadata to the OAuth server.
 	clientMetadata: {
 		// Must be a URL that will be exposing this metadata
-		client_id: "https://schedulesky/api/client-metadata.json",
+		client_id: "https://schedulesky.vercel.app/api/client-metadata.json",
 		client_name: "schedulesky",
 		client_uri: "https://schedulesky.vercel.app/",
 		//		logo_uri: "https://schedulesky.vercel.app/next.svg",

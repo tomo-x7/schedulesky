@@ -8,7 +8,8 @@ export default function middleware(request: Request) {
 	const url = new URL(request.url);
 	const cookie = parse(request.headers.get("Cookie") ?? "");
 	if (!cookie.session) {
-		return Response.redirect("/login", 302);
+		url.pathname = "/login";
+		return Response.redirect(url, 302);
 	}
 
 	return next();
