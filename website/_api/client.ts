@@ -54,10 +54,10 @@ export const client = new NodeOAuthClient({
 	//requestLock,
 });
 /**@param ex 期限切れになるまでの秒数 */
-async function setredis(key: string, value: object, ex?: number) {
-	await fetch(`${process.env.UPSTASH_REDIS_REST_URL}/set/${key}${typeof ex === "number" ? `?ex=${ex}` : ""}`, {
+async function setredis(key: string, value: object|string, ex?: number) {
+	const res = await fetch(`${process.env.UPSTASH_REDIS_REST_URL}/set/${key}${typeof ex === "number" ? `?ex=${ex}` : ""}`, {
 		method: "POST",
-		body: JSON.stringify(value),
+		body: typeof value==="object"?JSON.stringify(value):value,
 		headers: {
 			Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}`,
 		},
@@ -80,4 +80,12 @@ async function delredis(key: string) {
 			Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}`,
 		},
 	});
+}
+
+export const redis = { setredis, getredis, delredis };
+
+import type { VercelRequest, VercelResponse } from "@vercel/node";
+
+export default function GET(req: VercelRequest, res: VercelResponse) {
+	res.status(404).send(undefined);
 }
