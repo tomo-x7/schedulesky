@@ -32,20 +32,14 @@ export const client = new NodeOAuthClient({
 
 	// Interface to store authenticated session data
 	sessionStore: {
-		set: async (sub: string, sessionData: NodeSavedSession) => {
-			console.log(JSON.stringify(sessionData));
-			await setredis(`session_${sub}`, sessionData);
-		},
+		set: (sub: string, sessionData: NodeSavedSession) => setredis(`session_${sub}`, sessionData),
 		get: (key: string) => getredis(`session_${key}`),
 		del: (key: string) => delredis(`session_${key}`),
 	},
 
 	// Interface to store authorization state data (during authorization flows)
 	stateStore: {
-		set: async (sub: string, sessionData: NodeSavedState) => {
-			console.log(JSON.stringify(sessionData));
-			await setredis(`state_${sub}`, sessionData, 3600);
-		},
+		set: (sub: string, sessionData: NodeSavedState) => setredis(`state_${sub}`, sessionData, 3600),
 		get: (key: string) => getredis(`state_${key}`),
 		del: (key: string) => delredis(`state_${key}`),
 	},
@@ -54,10 +48,10 @@ export const client = new NodeOAuthClient({
 	//requestLock,
 });
 /**@param ex 期限切れになるまでの秒数 */
-async function setredis(key: string, value: object|string, ex?: number) {
+async function setredis(key: string, value: object | string, ex?: number) {
 	const res = await fetch(`${process.env.UPSTASH_REDIS_REST_URL}/set/${key}${typeof ex === "number" ? `?ex=${ex}` : ""}`, {
 		method: "POST",
-		body: typeof value==="object"?JSON.stringify(value):value,
+		body: typeof value === "object" ? JSON.stringify(value) : value,
 		headers: {
 			Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}`,
 		},
