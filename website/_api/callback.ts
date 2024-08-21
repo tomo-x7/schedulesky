@@ -13,8 +13,11 @@ export default async function GET(req: VercelRequest, res: VercelResponse) {
 		const sessionID = Buffer.from(crypto.getRandomValues(new Uint32Array(10)).buffer).toString("base64url");
 		redis.setredis(`mysession_${sessionID}`, agent.did, 7200);
 		return res
-			.appendHeader("Set-Cookie", serialize("session", sessionID, { httpOnly: true, secure: true, sameSite: "lax", maxAge: 7200 }))
-			.send("ok<script>console.log('ok')</script>")
+			.appendHeader(
+				"Set-Cookie",
+				serialize("session", sessionID, { httpOnly: true, secure: true, sameSite: "lax", maxAge: 7200, path: "/" }),
+			)
+			.send("ok<script>console.log('ok')</script>");
 	} catch {
 		return res.status(400).send("failed auth");
 	}
