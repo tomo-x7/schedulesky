@@ -17,7 +17,7 @@ export default async function GET(req: VercelRequest, res: VercelResponse) {
 				"Set-Cookie",
 				serialize("session", sessionID, { httpOnly: true, secure: true, sameSite: "lax", maxAge: 7200, path: "/" }),
 			)
-			.send("ok<script>console.log('ok')</script>");
+			.redirect(302, "/");
 	} catch {
 		return res.status(400).send("failed auth");
 	}
