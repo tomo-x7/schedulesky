@@ -14,7 +14,7 @@ export default async function GET(req: VercelRequest, res: VercelResponse) {
 		redis.setredis(`mysession_${sessionID}`, agent.did, 7200);
 		return res
 			.appendHeader("Set-Cookie", serialize("session", sessionID, { httpOnly: true, secure: true, sameSite: "lax", maxAge: 7200 }))
-			.send("<script>location.href='/'</script>")
+			.send("ok<script>console.log('ok')</script>")
 	} catch {
 		return res.status(400).send("failed auth");
 	}
