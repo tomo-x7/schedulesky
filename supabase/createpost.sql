@@ -3,9 +3,7 @@ OR REPLACE FUNCTION createpost (
   post_at timestamptz,
   posttext text,
   facet jsonb,
-  refreshtoken text,
   did text,
-  pdsendpoint text,
   blob jsonb[],
   rid text[],
   alt text[]
@@ -13,8 +11,8 @@ OR REPLACE FUNCTION createpost (
 DECLARE
 postid bigint;
 BEGIN
-insert into public.schedulesky_posts (post_at,text,did,endpoint,refreshtoken,facet)
- values (createpost.post_at,createpost.posttext,createpost.did,createpost.pdsendpoint,createpost.refreshtoken,createpost.facet)
+insert into public.schedulesky_posts (post_at,text,did,facet)
+ values (createpost.post_at,createpost.posttext,createpost.did,createpost.facet)
  RETURNING id into postid;
 
 FOR i IN 1..4 LOOP
