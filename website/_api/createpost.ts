@@ -3,6 +3,7 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 
 export default async function GET(req: VercelRequest, res: VercelResponse) {
 	//バリデーション
+	console.log(req.headers);
 	if (req.headers["Content-Type"] !== "application/json") {
 		return res.status(400).json({ error: "Content-Type must be 'application/json'" });
 	}
