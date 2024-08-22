@@ -57,7 +57,7 @@ async function setredis(key: string, value: object | string, ex?: number) {
 		},
 	});
 }
-async function getredis(key: string) {
+async function getredis(key: string, parse = true) {
 	const res = await fetch(`${process.env.UPSTASH_REDIS_REST_URL}/get/${key}`, {
 		headers: {
 			Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}`,
@@ -66,7 +66,8 @@ async function getredis(key: string) {
 	if (!res.ok) {
 		return;
 	}
-	return JSON.parse((await res.json()).result);
+	const data = await res.json();
+	return parse ? JSON.parse(data.result) : data.result;
 }
 async function delredis(key: string) {
 	await fetch(`${process.env.UPSTASH_REDIS_REST_URL}/del/${key}`, {

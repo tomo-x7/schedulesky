@@ -1,9 +1,9 @@
-import { client } from "./client";
+import { client, redis } from "./client";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 
 export default async function GET(req: VercelRequest, res: VercelResponse) {
 	//バリデーション
-	if (req.headers["Content-Type"]??req.headers["content-type"] !== "application/json") {
+	if (req.headers["Content-Type"] ?? req.headers["content-type"] !== "application/json") {
 		//ヘッダーが小文字になる場合がある
 		return res.status(400).json({ error: "Content-Type must be 'application/json'" });
 	}
@@ -22,8 +22,8 @@ export default async function GET(req: VercelRequest, res: VercelResponse) {
 	//セッションを取得
 
 	const session = req.cookies.session;
-
-	const agent = session ? await client.restore(session).catch(() => undefined) : undefined;
+	const did = await redis.getredis(`mysession_${session}`, false);
+	const agent = session ? await client.restore(did).catch(() => undefined) : undefined;
 	if (!agent) {
 		return res.status(401).json({ error: "require auth" });
 	}
@@ -35,8 +35,8 @@ export default async function GET(req: VercelRequest, res: VercelResponse) {
 	//画像をアップロード
 	if (data.images !== undefined) {
 		for (const image of data.images) {
-            const blobres = await agent.uploadBlob(Buffer.from(image.base64,"base64"))
-			
+			const blobres = await agent.uploadBlob(Buffer.from(image.base64, "base64"));
+
 			if (!blobres.success) return res.status(500).json({ error: "image upload failed" });
 			const body = {
 				repo: agent.did,
@@ -47,7 +47,7 @@ export default async function GET(req: VercelRequest, res: VercelResponse) {
 					blob: blobres.data.blob,
 				},
 			};
-            const recordres=await agent.com.atproto.repo.createRecord(body)
+			const recordres = await agent.com.atproto.repo.createRecord(body);
 			if (!recordres.success) {
 				return res.status(500).json({ error: "save image failed" });
 			}
