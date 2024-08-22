@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import App from "./App.tsx";
 import Login from "./login.tsx";
+import fallbacklogo from "/fallback.svg";
 
 createRoot(document.getElementById("root")!).render(
 	<StrictMode>
@@ -13,7 +14,7 @@ createRoot(document.getElementById("root")!).render(
 				{/*リリース前に作成*/}
 				<div id="menu">
 					<button type="button" id="menubutton">
-						<img id="avatar" width="32" height="32" alt="" />
+						<img id="avatar" width="32" height="32" alt="" src={localStorage.getItem("icon") ?? fallbacklogo} />
 					</button>
 					<div>
 						<button type="button">サインアウト{/*API未実装*/}</button>
