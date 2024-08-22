@@ -61,8 +61,8 @@ export default async function GET(req: VercelRequest, res: VercelResponse) {
 	}
 	const dbheader = new Headers();
 	dbheader.set("Content-Type", "application/json");
-	dbheader.set("Authorization", `Bearer ${process.env.SUPABASE_SERVICE_KEY}`);
-	dbheader.set("apikey", process.env.SUPABASE_SERVICE_KEY ?? "");
+	dbheader.set("Authorization", `Bearer ${process.env.SUPABASE_KEY}`);
+	dbheader.set("apikey", process.env.SUPABASE_KEY ?? "");
 	const dbres = await fetch("https://rxtjjnbocilskefknuac.supabase.co/rest/v1/rpc/createpost", {
 		method: "POST",
 		headers: dbheader,
