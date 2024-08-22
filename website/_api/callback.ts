@@ -20,8 +20,8 @@ export default async function GET(req: VercelRequest, res: VercelResponse) {
 				serialize("session", sessionID, { httpOnly: true, secure: true, sameSite: "lax", maxAge: 7200, path: "/" }),
 			)
 			.send(`<script>
-				localStorage.setItem("handle",${profile.handle});
-				localStorage.setItem("icon",${profile.avatar});
+				localStorage.setItem("handle","${profile.handle}");
+				localStorage.setItem("icon","${profile.avatar}");
 				window.location="/";
 				</script>`);
 	} catch {
