@@ -10,10 +10,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@atproto/api": "^0.13.3",
     "@atproto/jwk-jose": "^0.1.2",
     "@atproto/oauth-client-node": "^0.0.3",
     "@vercel/edge": "^1.1.2",
     "@vercel/node": "^3.2.8",
+    "browser-image-compression": "^2.0.2",
     "cookie": "^0.6.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
