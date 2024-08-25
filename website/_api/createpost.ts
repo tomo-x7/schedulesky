@@ -35,7 +35,9 @@ export default async function GET(req: VercelRequest, res: VercelResponse) {
 	//画像をアップロード
 	if (data.images !== undefined) {
 		for (const image of data.images) {
-			const blobres = await agent.uploadBlob(Buffer.from(image.base64, "base64"),{encoding:"image/jpeg"});
+			const blobres = await agent.uploadBlob(Buffer.from(image.base64.replace(/data:image\/jpeg;base64,/, ""), "base64"), {
+				encoding: "image/jpeg",
+			});
 
 			if (!blobres.success) return res.status(500).json({ error: "image upload failed" });
 			const body = {
