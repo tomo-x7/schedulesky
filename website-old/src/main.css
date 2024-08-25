@@ -1,7 +1,0 @@
-#menu>div {
-    display: none;
-}
-
-#menu.active>div {
-    display: block;
-}

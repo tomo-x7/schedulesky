@@ -1,3 +1,5 @@
 keys/
 .vscode/
 .env
+website-old/
+workers-old/
