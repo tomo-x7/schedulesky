@@ -1,0 +1,11 @@
+{
+  "name": "linkcardgen",
+  "version": "1.0.0",
+  "license": "ISC",
+  "dependencies": {
+    "htmlrewriter": "^0.0.9"
+  },
+  "devDependencies": {
+    "@types/node": "^22.5.0"
+  }
+}

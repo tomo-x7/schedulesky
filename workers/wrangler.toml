@@ -1,0 +1,5 @@
+name = "linkcardgen"
+main = "src/worker.js"
+compatibility_date = "2024-07-26"
+workers_dev = true
+compatibility_flags = [ "nodejs_compat" ]
