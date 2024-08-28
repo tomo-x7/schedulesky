@@ -29,7 +29,7 @@ export default function Login() {
 					{handle}でログイン
 				</a>
 			) : undefined}
-			<a href="/api/login?endpoint=bsky.social">
+			<a href="/api/login?endpoint=https://bsky.social">
 				<img alt="" />
 				{/* ↑blueskyのアイコン*/}
 				{handle ? "他のユーザー" : "Bluesky"}でログイン
