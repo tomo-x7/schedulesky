@@ -10,9 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@atproto/api": "^0.13.3",
+    "@atproto/api": "^0.13.4",
     "@atproto/jwk-jose": "^0.1.2",
-    "@atproto/oauth-client-node": "^0.0.3",
+    "@atproto/oauth-client-node": "^0.1.0",
     "@vercel/edge": "^1.1.2",
     "@vercel/node": "^3.2.8",
     "browser-image-compression": "^2.0.2",

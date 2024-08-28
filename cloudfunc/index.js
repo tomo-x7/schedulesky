@@ -2,26 +2,10 @@
 import { cloudEvent } from "@google-cloud/functions-framework";
 import { NodeOAuthClient } from "@atproto/oauth-client-node";
 import { JoseKey } from "@atproto/jwk-jose";
+import { Agent } from "@atproto/api";
 
-const client = new NodeOAuthClient({
-	clientMetadata: {
-		// Must be a URL that will be exposing this metadata
-		client_id: "https://schedulesky.vercel.app/api/client-metadata.json",
-		client_name: "schedulesky",
-		client_uri: "https://schedulesky.vercel.app/",
-		//		logo_uri: "https://oauth-test-pink.vercel.app/next.svg",
-		//		tos_uri: "https://oauth-test-pink.vercel.app/tos",
-		//		policy_uri: "https://oauth-test-pink.vercel.app/policy",
-		redirect_uris: ["https://schedulesky.vercel.app/api/callback"],
-		scope: "profile email offline_access",
-		grant_types: ["authorization_code", "refresh_token"],
-		response_types: ["code"],
-		application_type: "web",
-		token_endpoint_auth_method: "private_key_jwt",
-		dpop_bound_access_tokens: true,
-		jwks_uri: "https://schedulesky.vercel.app/api/jwks.json",
-		token_endpoint_auth_signing_alg: "ES256",
-	},
+const client = await NodeOAuthClient.fromClientId({
+	clientId: "https://schedulesky.vercel.app/api/client-metadata.json",
 	keyset: await Promise.all([
 		JoseKey.fromImportable(process.env.PRIVATE_KEY_1 ?? ""),
 		JoseKey.fromImportable(process.env.PRIVATE_KEY_2 ?? ""),
@@ -121,13 +105,14 @@ async function POST(data) {
 		const imgdata = await imgres.json();
 
 		//agentを取得
-		const agent = await client.restore(data.did).catch((e) => {
+		const session = await client.restore(data.did).catch((e) => {
 			console.error(e);
 			return undefined;
 		});
-		if (!agent) {
+		if (!session) {
 			return;
 		}
+		const agent = new Agent(session);
 
 		//ポストする
 		//recordのviaにクライアント名を入れる

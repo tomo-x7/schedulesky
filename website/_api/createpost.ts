@@ -1,4 +1,5 @@
 import { client, redis } from "./client";
+import { Agent } from "@atproto/api";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 
 export default async function GET(req: VercelRequest, res: VercelResponse) {
@@ -21,13 +22,16 @@ export default async function GET(req: VercelRequest, res: VercelResponse) {
 	}
 	//セッションを取得
 
-	const session = req.cookies.session;
-	const did = await redis.getredis(`mysession_${session}`, false);
-	const agent = session ? await client.restore(did).catch(() => undefined) : undefined;
-	if (!agent) {
+	const sessionid = req.cookies.session;
+	const did = await redis.getredis(`mysession_${sessionid}`, false);
+	const atpsession = sessionid ? await client.restore(did).catch(() => undefined) : undefined;
+	if (!atpsession) {
 		return res.status(401).json({ error: "require auth" });
 	}
-
+	const agent = new Agent(atpsession);
+	if (!agent.did) {
+		return res.status(401).json({ error: "restore failed" });
+	}
 	//DBに登録するbodyの元になる
 	const blobs: Array<object> = [];
 	const rids: Array<string> = [];

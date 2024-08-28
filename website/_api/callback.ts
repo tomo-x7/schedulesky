@@ -2,6 +2,7 @@ import { client, redis } from "./client";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { serialize } from "cookie";
 import crypto from "node:crypto";
+import { Agent } from "@atproto/api";
 
 export default async function GET(req: VercelRequest, res: VercelResponse) {
 	if (req.method !== "GET") {
@@ -9,10 +10,11 @@ export default async function GET(req: VercelRequest, res: VercelResponse) {
 	}
 	const params = new URL(`http://${process.env.HOST ?? "localhost"}${req.url}`).searchParams;
 	try {
-		const { agent, state } = await client.callback(params);
+		const { session, state } = await client.callback(params);
 		const sessionID = Buffer.from(crypto.getRandomValues(new Uint32Array(10)).buffer).toString("base64url");
-		redis.setredis(`mysession_${sessionID}`, agent.did, 7200);
-		const profile = (await agent.getProfile({ actor: agent.did })).data;
+		redis.setredis(`mysession_${sessionID}`, session.did, 7200);
+		const agent = new Agent(session);
+		const profile = (await agent.getProfile({ actor: session.did })).data;
 
 		return res
 			.appendHeader(

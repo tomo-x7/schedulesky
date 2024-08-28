@@ -13,7 +13,7 @@ export const client = new NodeOAuthClient({
 		//		tos_uri: "https://schedulesky.vercel.app/tos",
 		//		policy_uri: "https://schedulesky.vercel.app/policy",
 		redirect_uris: ["https://schedulesky.vercel.app/api/callback"],
-		scope: "profile openid offline_access",
+		scope: "atproto transition:generic",
 		grant_types: ["authorization_code", "refresh_token"],
 		response_types: ["code"],
 		application_type: "web",
