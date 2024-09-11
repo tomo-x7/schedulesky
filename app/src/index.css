@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply text-slate-700 bg-fixed bg-gradient-to-br from-cyan-200 to-indigo-300;
+  }
+}
+
+@layer components {
+  .material {
+    @apply bg-white/50 border border-white/75 shadow;
+  }
+}
