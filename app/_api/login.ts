@@ -16,7 +16,8 @@ export default async function GET(req: VercelRequest, res: VercelResponse) {
 		state,
 		// Only supported if OAuth server is openid-compliant
 		ui_locales: "ja en",
-		redirect_uri: `http://${process.env.HOST ?? "schedulesky.vercel.app"}/api/callback`,
+		//デプロイ先を切り替えるときに変更！📌
+		redirect_uri: "http://schedulesky-fordebug.vercel.app/api/callback",
 	});
 
 	return res.redirect(302, redirecturl.toString());
