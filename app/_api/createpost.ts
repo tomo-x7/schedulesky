@@ -12,7 +12,7 @@ export default async function GET(req: VercelRequest, res: VercelResponse) {
 		date: string;
 		text: string;
 		facets: object;
-		/**base64エンコードした画像とALTテキストの配列　最大画像サイズは0.9MB? クライアント側でJPEGに変換しておく　配列の最大長さは4 */
+		/**base64エンコードした画像とALTテキストの配列 最大画像サイズは0.9MB? クライアント側でJPEGに変換しておく 配列の最大長さは4 */
 		images: Array<{ base64: string; alt: string | undefined }> | undefined;
 	};
 	const data: postdata = req.body;
