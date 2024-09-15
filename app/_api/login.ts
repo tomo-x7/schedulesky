@@ -7,14 +7,16 @@ export default async function GET(req: VercelRequest, res: VercelResponse) {
 	}
 	const requrl = new URL(`http://${process.env.HOST ?? "localhost"}${req.url}`);
 	const params = requrl.searchParams;
-	const handle = params.get("handle") ?? params.get("endpoint"); // eg. from query string
+	//ハンドルがわかっている場合はハンドル、でなければPDSのエンドポイント
+	const handleOrEndpoint = params.get("handle") ?? params.get("endpoint");
 	const state = crypto.getRandomValues(new Uint16Array(1))[0].toString();
 
-	if (!handle) return res.status(400).send("");
-	const redirecturl = await client.authorize(handle, {
+	if (!handleOrEndpoint) return res.status(400).send("handle or endpoint required");
+	const redirecturl = await client.authorize(handleOrEndpoint, {
 		state,
 		// Only supported if OAuth server is openid-compliant
 		ui_locales: "ja en",
+		redirect_uri: `http://${process.env.HOST ?? "schedulesky.vercel.app"}/api/callback`,
 	});
 
 	return res.redirect(302, redirecturl.toString());
