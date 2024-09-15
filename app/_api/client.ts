@@ -5,21 +5,22 @@ export const client = new NodeOAuthClient({
 	// This object will be used to build the payload of the /client-metadata.json
 	// endpoint metadata, exposing the client metadata to the OAuth server.
 	clientMetadata: {
+		//デプロイ先の切り替え時に各URLを書き換え📌
 		// Must be a URL that will be exposing this metadata
-		client_id: "https://schedulesky.vercel.app/api/client-metadata.json",
+		client_id: "https://schedulesky-fordebug.vercel.app/api/client-metadata.json",
 		client_name: "schedulesky",
-		client_uri: "https://schedulesky.vercel.app/",
+		client_uri: "https://schedulesky-fordebug.vercel.app/",
 		//		logo_uri: "https://schedulesky.vercel.app/next.svg",
 		//		tos_uri: "https://schedulesky.vercel.app/tos",
 		//		policy_uri: "https://schedulesky.vercel.app/policy",
-		redirect_uris: ["https://schedulesky.vercel.app/api/callback","https://schedulesky-fordebug.vercel.app/api/callback"],
+		redirect_uris: ["https://schedulesky-fordebug.vercel.app/api/callback"],
 		scope: "atproto transition:generic",
 		grant_types: ["authorization_code", "refresh_token"],
 		response_types: ["code"],
 		application_type: "web",
 		token_endpoint_auth_method: "private_key_jwt",
 		dpop_bound_access_tokens: true,
-		jwks_uri: "https://schedulesky.vercel.app/api/jwks.json",
+		jwks_uri: "https://schedulesky-fordebug.vercel.app/api/jwks.json",
 		token_endpoint_auth_signing_alg: "ES256",
 	},
 	// Used to authenticate the client to the token endpoint. Will be used to

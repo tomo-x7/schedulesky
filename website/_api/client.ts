@@ -12,7 +12,7 @@ export const client = new NodeOAuthClient({
 		//		logo_uri: "https://schedulesky.vercel.app/next.svg",
 		//		tos_uri: "https://schedulesky.vercel.app/tos",
 		//		policy_uri: "https://schedulesky.vercel.app/policy",
-		redirect_uris: ["https://schedulesky.vercel.app/api/callback","https://schedulesky-fordebug.vercel.app/api/callback"],
+		redirect_uris: ["https://schedulesky.vercel.app/api/callback"],
 		scope: "atproto transition:generic",
 		grant_types: ["authorization_code", "refresh_token"],
 		response_types: ["code"],
