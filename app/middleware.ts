@@ -9,8 +9,10 @@ export default function middleware(request: Request) {
 	const cookie = parse(request.headers.get("Cookie") ?? "");
 	if (!cookie.session) {
 		url.pathname = "/login";
-		return Response.redirect(url, 302);
+		//📌ロジック書く段階でコメント化解除
+		//return Response.redirect(url, 302);
 	}
+	//📌セッションが有効かどうかも確認
 
 	return next();
 }
