@@ -17,20 +17,25 @@ const LoginPage: React.FC = () => {
               <Text>Bluesky予約投稿サービス</Text>
             </VStack>
             <VStack gap={4}>
-              <Button bgColor="cyan.fg" fontWeight="bold">Blueskyでログイン</Button>
+              <form action="/api/login">
+                <input type="hidden" name="endpoint" value="https://bsky.social" />
+                <Button type="submit" bgColor="cyan.fg" fontWeight="bold">Blueskyでログイン</Button>
+              </form>
               <PopoverRoot portalled={true}>
                 <PopoverTrigger asChild>
                   <Button size="sm" variant="outline" fontWeight="bold">セルフホストPDSの方はこちら</Button>
                 </PopoverTrigger>
                 <PopoverContent>
                   <PopoverArrow />
-                  <PopoverBody>
-                    <PopoverTitle fontWeight="bold">セルフホストPDSでログイン</PopoverTitle>
-                    <Input placeholder="https://bsky.social" mt={4} focusRingColor="cyan.fg" />
-                  </PopoverBody>
-                  <PopoverFooter>
-                    <Button size="xs" fontWeight="bold" ms="auto" bgColor="cyan.fg">ログイン</Button>
-                  </PopoverFooter>
+                  <form action="/api/login">
+                    <PopoverBody>
+                      <PopoverTitle fontWeight="bold">セルフホストPDSでログイン</PopoverTitle>
+                      <Input type="url" placeholder="https://bsky.social" required name="endpoint" mt={4} focusRingColor="cyan.fg" />
+                    </PopoverBody>
+                    <PopoverFooter>
+                      <Button type="submit" size="xs" fontWeight="bold" ms="auto" bgColor="cyan.fg">ログイン</Button>
+                    </PopoverFooter>
+                  </form>
                 </PopoverContent>
               </PopoverRoot>
             </VStack>
