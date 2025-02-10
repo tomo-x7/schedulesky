@@ -1,7 +1,11 @@
-import { Box, Button, Card, Heading, HStack, Icon, IconButton, Separator, Spacer, Stack, Text, Textarea, VStack } from "@chakra-ui/react"
+import { Alert, Box, Button, Card, Heading, HStack, Icon, IconButton, Separator, Spacer, Stack, Text, Textarea, VStack } from "@chakra-ui/react"
 import { Avatar } from "./components/ui/avatar"
+import { Skeleton, SkeletonCircle } from "./components/ui/skeleton"
+import { useProfile } from "./hooks/useProfile"
 
 const HomePage: React.FC = () => {
+  const { data, isLoading, error } = useProfile()
+
   return (
     <Box px={4} pt={4} pb={24}>
       <VStack gap={4} p={12}>
@@ -17,22 +21,40 @@ const HomePage: React.FC = () => {
       </VStack>
       <Stack maxW="lg" mx="auto" gap={8}>
         <Stack gap={4}>
+          {(!!error) && (
+            <Alert.Root status="error">
+              <Alert.Indicator />
+              <Alert.Content>
+                <Alert.Title>データの読み込みに失敗しました</Alert.Title>
+              </Alert.Content>
+            </Alert.Root>
+          )}
           <Card.Root p={3}>
-            <HStack>
-              <Avatar size="xl" />
-              <Box>
-                <Text fontSize="md">ジャンボンブール斎藤</Text>
-                <Text fontSize="sm" color="fg.muted">@unosw.bsky.social</Text>
-              </Box>
-              <Spacer />
-              <IconButton size="sm" variant="ghost" colorPalette="red" aria-label="ログアウト">
-                <Icon>
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5.636 5.636a9 9 0 1 0 12.728 0M12 3v9" />
-                  </svg>
-                </Icon>
-              </IconButton>
-            </HStack>
+            {isLoading || error ? (
+              <HStack>
+                <SkeletonCircle size={12} />
+                <Stack>
+                  <Skeleton width={32} height={5} />
+                  <Skeleton width={24} height={4} />
+                </Stack>
+              </HStack>
+            ) : (
+              <HStack>
+                <Avatar src={data?.avatar} size="xl" />
+                <Stack gap={0}>
+                  <Text fontSize="md">{data?.displayName}</Text>
+                  <Text fontSize="sm" color="fg.muted">{data?.handle}</Text>
+                </Stack>
+                <Spacer />
+                <IconButton size="sm" variant="ghost" colorPalette="red" aria-label="ログアウト">
+                  <Icon>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5.636 5.636a9 9 0 1 0 12.728 0M12 3v9" />
+                    </svg>
+                  </Icon>
+                </IconButton>
+              </HStack>
+            )}
           </Card.Root>
           <Card.Root>
             <Textarea size="lg" placeholder="最近どう？" rows={8} resize="none" autoresize border="none" focusRing="none" />
