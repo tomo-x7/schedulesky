@@ -1,10 +1,12 @@
 import { Alert, Box, Button, Card, Heading, HStack, Icon, IconButton, Separator, Spacer, Stack, Text, Textarea, VStack } from "@chakra-ui/react"
 import { Avatar } from "./components/ui/avatar"
 import { Skeleton, SkeletonCircle } from "./components/ui/skeleton"
+import { useLogout } from "./hooks/useLogout"
 import { useProfile } from "./hooks/useProfile"
 
 const HomePage: React.FC = () => {
   const { data, isLoading, error } = useProfile()
+  const { logout, isLoading: isLogoutLoading } = useLogout()
 
   return (
     <Box px={4} pt={4} pb={24}>
@@ -46,7 +48,7 @@ const HomePage: React.FC = () => {
                   <Text fontSize="sm" color="fg.muted">{data?.handle}</Text>
                 </Stack>
                 <Spacer />
-                <IconButton size="sm" variant="ghost" colorPalette="red" aria-label="ログアウト">
+                <IconButton aria-label="ログアウト" onClick={logout} loading={isLogoutLoading} size="sm" variant="ghost" colorPalette="red">
                   <Icon>
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5.636 5.636a9 9 0 1 0 12.728 0M12 3v9" />
