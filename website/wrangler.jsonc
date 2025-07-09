@@ -1,11 +1,17 @@
 {
-  "name": "schedulesky",
-  "compatibility_date": "2025-07-09",
-  "main": "./api/index.ts",
-  "assets": {
-    "directory": "./dist/",
-    "not_found_handling": "single-page-application",
-    "binding": "ASSETS"
-    // "run_worker_first": ["/api/*", "/"]
-  }
+	"name": "schedulesky",
+	"compatibility_date": "2025-07-09",
+	"main": "./api/index.ts",
+	"assets": {
+		"directory": "./dist/",
+		"not_found_handling": "single-page-application",
+		"binding": "ASSETS"
+		// "run_worker_first": ["/api/*", "/"]
+	},
+	"routes": [
+		{
+			"pattern": "schedulesky.tomo-x.win",
+			"custom_domain": true
+		}
+	]
 }
