@@ -1,0 +1,14 @@
+{
+	"client_id": "https://schedulesky.tomo-x.win/client-metadata.json",
+	"client_name": "schedulesky",
+	"client_uri": "https://schedulesky.tomo-x.win/",
+	"redirect_uris": ["https://schedulesky.tomo-x.win/api/callback"],
+	"scope": "atproto transition:generic",
+	"grant_types": ["authorization_code", "refresh_token"],
+	"response_types": ["code"],
+	"application_type": "web",
+	"token_endpoint_auth_method": "private_key_jwt",
+	"dpop_bound_access_tokens": true,
+	"jwks_uri": "https://schedulesky.tomo-x.win/jwks.json",
+	"token_endpoint_auth_signing_alg": "ES256"
+}

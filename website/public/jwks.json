@@ -1,0 +1,28 @@
+{
+	"keys": [
+		{
+			"kty": "EC",
+			"kid": "app.vercel.schedulesky.key1",
+			"use": "sig",
+			"crv": "P-256",
+			"x": "ttn0JdL9S4wzo7FPRQkW9rNSCkd9D_ptyiFukr5q9H8",
+			"y": "z03QA_6DyulFFlFL0kd9u8UkNdDZR18ud7ED6BmrN0k"
+		},
+		{
+			"kty": "EC",
+			"kid": "app.vercel.schedulesky.key2",
+			"use": "sig",
+			"crv": "P-256",
+			"x": "w0ThrkX1EkfXwlBvMiNIg39148FYwhGB71fsQXrKZng",
+			"y": "YwqGUtHKSATIwszz5UhDV8OWS3anhGlw9TrZu_SIzng"
+		},
+		{
+			"kty": "EC",
+			"kid": "app.vercel.schedulesky.key3",
+			"use": "sig",
+			"crv": "P-256",
+			"x": "KMsHvlEMpINTXSRObYSwxQuLmL8VQZXuMA9u6CK1N7o",
+			"y": "VMRIhshoyM3QkbrbXtVlmxB-Znu6G18hPHPfWA7U6Qg"
+		}
+	]
+}

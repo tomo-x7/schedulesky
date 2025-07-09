@@ -6,20 +6,20 @@ export const client = new NodeOAuthClient({
 	// endpoint metadata, exposing the client metadata to the OAuth server.
 	clientMetadata: {
 		// Must be a URL that will be exposing this metadata
-		client_id: "https://schedulesky.vercel.app/api/client-metadata.json",
+		client_id: "https://schedulesky.tomo-x.win/client-metadata.json",
 		client_name: "schedulesky",
-		client_uri: "https://schedulesky.vercel.app/",
-		//		logo_uri: "https://schedulesky.vercel.app/next.svg",
-		//		tos_uri: "https://schedulesky.vercel.app/tos",
-		//		policy_uri: "https://schedulesky.vercel.app/policy",
-		redirect_uris: ["https://schedulesky.vercel.app/api/callback"],
+		client_uri: "https://schedulesky.tomo-x.win/",
+		//		logo_uri: "https://schedulesky.tomo-x.win/next.svg",
+		//		tos_uri: "https://schedulesky.tomo-x.win/tos",
+		//		policy_uri: "https://schedulesky.tomo-x.win/policy",
+		redirect_uris: ["https://schedulesky.tomo-x.win/api/callback"],
 		scope: "atproto transition:generic",
 		grant_types: ["authorization_code", "refresh_token"],
 		response_types: ["code"],
 		application_type: "web",
 		token_endpoint_auth_method: "private_key_jwt",
 		dpop_bound_access_tokens: true,
-		jwks_uri: "https://schedulesky.vercel.app/api/jwks.json",
+		jwks_uri: "https://schedulesky.tomo-x.win/jwks.json",
 		token_endpoint_auth_signing_alg: "ES256",
 	},
 	// Used to authenticate the client to the token endpoint. Will be used to
@@ -49,7 +49,7 @@ export const client = new NodeOAuthClient({
 });
 /**@param ex 期限切れになるまでの秒数 */
 async function setredis(key: string, value: object | string, ex?: number) {
-	const res = await fetch(`${process.env.UPSTASH_REDIS_REST_URL}/set/${key}${typeof ex === "number" ? `?ex=${ex}` : ""}`, {
+	await fetch(`${process.env.UPSTASH_REDIS_REST_URL}/set/${key}${typeof ex === "number" ? `?ex=${ex}` : ""}`, {
 		method: "POST",
 		body: typeof value === "object" ? JSON.stringify(value) : value,
 		headers: {
@@ -66,7 +66,8 @@ async function getredis(key: string, parse = true) {
 	if (!res.ok) {
 		return;
 	}
-	const data = await res.json();
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+	const data = await res.json() as any;
 	return parse ? JSON.parse(data.result) : data.result;
 }
 async function delredis(key: string) {
@@ -78,9 +79,3 @@ async function delredis(key: string) {
 }
 
 export const redis = { setredis, getredis, delredis };
-
-import type { VercelRequest, VercelResponse } from "@vercel/node";
-
-export default function GET(req: VercelRequest, res: VercelResponse) {
-	res.status(404).send(undefined);
-}

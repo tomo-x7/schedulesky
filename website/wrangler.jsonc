@@ -1,0 +1,11 @@
+{
+  "name": "scheduleskt",
+  "compatibility_date": "2025-07-09",
+  "main": "./api/index.ts",
+  "assets": {
+    "directory": "./dist/",
+    "not_found_handling": "single-page-application",
+    "binding": "ASSETS"
+    // "run_worker_first": ["/api/*", "/"]
+  }
+}
