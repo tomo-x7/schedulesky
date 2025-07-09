@@ -1,42 +1,44 @@
 {
-  "name": "website",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "@atproto/api": "^0.13.4",
-    "@atproto/jwk-jose": "^0.1.2",
-    "@atproto/oauth-client-node": "^0.1.0",
-    "@vercel/edge": "^1.1.2",
-    "@vercel/node": "^3.2.8",
-    "browser-image-compression": "^2.0.2",
-    "cookie": "^0.6.0",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "react-router-dom": "^6.26.1",
-    "vite-plugin-vercel": "^8.0.1"
-  },
-  "devDependencies": {
-    "@cloudflare/vite-plugin": "^1.9.1",
-    "@cloudflare/workers-types": "^4.20250709.0",
-    "@eslint/js": "^9.9.0",
-    "@types/cookie": "^0.6.0",
-    "@types/node": "^22.4.0",
-    "@types/react": "^18.3.3",
-    "@types/react-dom": "^18.3.0",
-    "@vitejs/plugin-react": "^4.3.1",
-    "eslint": "^9.9.0",
-    "eslint-plugin-react-hooks": "^5.1.0-rc.0",
-    "eslint-plugin-react-refresh": "^0.4.9",
-    "globals": "^15.9.0",
-    "typescript": "^5.5.3",
-    "typescript-eslint": "^8.0.1",
-    "vite": "^5.4.1"
-  }
+	"name": "website",
+	"private": true,
+	"version": "0.0.0",
+	"type": "module",
+	"scripts": {
+		"dev": "vite",
+		"build": "tsc -b && vite build",
+		"lint": "eslint .",
+		"preview": "vite preview",
+		"deploy": "wrangler deploy"
+	},
+	"dependencies": {
+		"@atproto/api": "^0.13.4",
+		"@atproto/jwk-jose": "^0.1.2",
+		"@atproto/oauth-client-node": "^0.1.0",
+		"@vercel/edge": "^1.1.2",
+		"@vercel/node": "^3.2.8",
+		"browser-image-compression": "^2.0.2",
+		"cookie": "^0.6.0",
+		"react": "^18.3.1",
+		"react-dom": "^18.3.1",
+		"react-router-dom": "^6.26.1",
+		"vite-plugin-vercel": "^8.0.1"
+	},
+	"devDependencies": {
+		"@cloudflare/vite-plugin": "^1.9.1",
+		"@cloudflare/workers-types": "^4.20250709.0",
+		"@eslint/js": "^9.9.0",
+		"@types/cookie": "^0.6.0",
+		"@types/node": "^22.4.0",
+		"@types/react": "^18.3.3",
+		"@types/react-dom": "^18.3.0",
+		"@vitejs/plugin-react": "^4.3.1",
+		"eslint": "^9.9.0",
+		"eslint-plugin-react-hooks": "^5.1.0-rc.0",
+		"eslint-plugin-react-refresh": "^0.4.9",
+		"globals": "^15.9.0",
+		"typescript": "^5.5.3",
+		"typescript-eslint": "^8.0.1",
+		"vite": "^5.4.1",
+		"wrangler": "^4.24.0"
+	}
 }
